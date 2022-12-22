@@ -1,0 +1,14 @@
+server:
+  port:8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    url: jdbc:mysql://localhost:3306/spring-security-demo
+    password: Patrick12345!
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
