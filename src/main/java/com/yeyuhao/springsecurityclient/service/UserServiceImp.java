@@ -8,6 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.yeyuhao.springsecurityclient.model.UserModel;
+
+import java.util.Calendar;
+
 @Service
 public class UserServiceImp implements UserService{
     @Autowired
@@ -37,5 +40,29 @@ public class UserServiceImp implements UserService{
     public void saveVerficationTokenForUser(String token, User user) {
         VerificationToken verificationToken = new VerificationToken(user, token);
         verificationTokenRepository.save(verificationToken);
+    }
+
+    @Override
+    public String validVerificationToken(String token) {
+        // Find the specific token
+        VerificationToken findVerificationToken = verificationTokenRepository.findByToken(token);
+        if(findVerificationToken == null){
+            return "invalid";
+        }
+
+        // Get user object
+        User user = findVerificationToken.getUser();
+        Calendar cal = Calendar.getInstance();
+        // Check if time is expired
+        if((findVerificationToken.getExpirationTime().getTime() - cal.getTime().getTime()) <=0){
+            verificationTokenRepository.delete(findVerificationToken);
+            return "expired";
+        }
+
+        // update and save user
+        user.setEnabled(true);
+        userRepository.save(user);
+        return "valid";
+
     }
 }
