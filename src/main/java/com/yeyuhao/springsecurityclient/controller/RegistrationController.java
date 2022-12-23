@@ -2,6 +2,7 @@ package com.yeyuhao.springsecurityclient.controller;
 import com.yeyuhao.springsecurityclient.entity.User;
 import com.yeyuhao.springsecurityclient.entity.VerificationToken;
 import com.yeyuhao.springsecurityclient.event.RegistrationCompleteEvent;
+import com.yeyuhao.springsecurityclient.model.PasswordModel;
 import com.yeyuhao.springsecurityclient.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import com.yeyuhao.springsecurityclient.model.UserModel;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Optional;
+import java.util.UUID;
+
 @Slf4j
 @RestController
 public class RegistrationController {
@@ -47,6 +51,51 @@ public class RegistrationController {
         User user = verificationToken.getUser();
         resendVerificationTokenMail(user , applicationUrl(request) ,  verificationToken);
         return "Verification Link Sent";
+    }
+
+    @PostMapping("/resetPassword")
+    public String resetPassword(@RequestBody PasswordModel passwordModel,
+                                 HttpServletRequest request){
+        User user =  userService.findUserByEmail(passwordModel.getEmail());
+        String url = "";
+        if(user != null){
+            String token = UUID.randomUUID().toString();
+            userService.createPasswordResetToken(user, token);
+            url = passwordResetTokenMail(user, applicationUrl(request),token);
+        }
+        return url;
+
+    }
+
+
+    @PostMapping("/savePassword")
+    public String savePassword(@RequestParam("token") String token,
+                               @RequestBody PasswordModel passwordModel){
+
+        // Verify the token
+        String result = userService.validatePasswordResetToken(token);
+        if(!result.equalsIgnoreCase("valid")){
+            return "Invalid Token";
+        }
+
+        // update password
+        Optional<User> user = userService.getUserByPasswordResetToken(token);
+        if(user.isPresent()){
+            userService.updatePassword(user.get(),passwordModel.getNewPassword());
+            return "Password Reset successfully";
+        }else{
+            return "Invalid Token";
+        }
+
+    }
+
+
+    private String passwordResetTokenMail(User user, String applicationUrl, String token) {
+        String url = applicationUrl
+                + "/savePassword?token="
+                + token;
+        log.info("Click the link to Reset: {}",url);
+        return url;
     }
 
     private void resendVerificationTokenMail(User user, String applicationUrl ,VerificationToken verificationToken ) {
