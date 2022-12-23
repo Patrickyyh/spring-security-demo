@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.yeyuhao.springsecurityclient.model.UserModel;
 
 import java.util.Calendar;
+import java.util.UUID;
 
 @Service
 public class UserServiceImp implements UserService{
@@ -40,6 +41,19 @@ public class UserServiceImp implements UserService{
     public void saveVerficationTokenForUser(String token, User user) {
         VerificationToken verificationToken = new VerificationToken(user, token);
         verificationTokenRepository.save(verificationToken);
+    }
+
+    @Override
+    public VerificationToken generateNewVerificationToken(String oldToken) {
+        // Find the old token
+        VerificationToken verificationToken
+                = verificationTokenRepository.findByToken(oldToken);
+
+        //Generate a new token and save the token
+        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationTokenRepository.save(verificationToken);
+        return verificationToken ;
+
     }
 
     @Override

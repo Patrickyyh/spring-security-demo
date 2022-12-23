@@ -30,7 +30,6 @@ public class RegistrationCompleteEventListener
         String url = event.getApplicationUrl() +
                 "/verifyRegistration?token="+
                 token;
-
         //
         log.info("Click the link to verify your account: {}",url);
     }

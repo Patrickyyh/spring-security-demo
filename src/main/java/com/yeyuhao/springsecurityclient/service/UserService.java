@@ -1,5 +1,6 @@
 package com.yeyuhao.springsecurityclient.service;
 import com.yeyuhao.springsecurityclient.entity.User;
+import com.yeyuhao.springsecurityclient.entity.VerificationToken;
 import com.yeyuhao.springsecurityclient.model.UserModel;
 
 public interface UserService {
@@ -8,4 +9,6 @@ public interface UserService {
     void saveVerficationTokenForUser(String token,User user);
 
     String validVerificationToken(String token);
+
+    VerificationToken generateNewVerificationToken(String oldToken);
 }

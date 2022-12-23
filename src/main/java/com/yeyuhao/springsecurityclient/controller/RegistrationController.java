@@ -1,14 +1,16 @@
 package com.yeyuhao.springsecurityclient.controller;
 import com.yeyuhao.springsecurityclient.entity.User;
+import com.yeyuhao.springsecurityclient.entity.VerificationToken;
 import com.yeyuhao.springsecurityclient.event.RegistrationCompleteEvent;
 import com.yeyuhao.springsecurityclient.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.*;
 import com.yeyuhao.springsecurityclient.model.UserModel;
 
 import javax.servlet.http.HttpServletRequest;
-
+@Slf4j
 @RestController
 public class RegistrationController {
     @Autowired
@@ -34,11 +36,28 @@ public class RegistrationController {
        if(result.equalsIgnoreCase("valid")){
            return "User Verifies successfully";
        }
-
        return "Bad User";
-        
     }
 
+
+    @GetMapping("/resendVerifyToken")
+    public String resendVerification(@RequestParam("token") String oldToken,
+                                     HttpServletRequest request){
+        VerificationToken verificationToken = userService.generateNewVerificationToken(oldToken);
+        User user = verificationToken.getUser();
+        resendVerificationTokenMail(user , applicationUrl(request) ,  verificationToken);
+        return "Verification Link Sent";
+    }
+
+    private void resendVerificationTokenMail(User user, String applicationUrl ,VerificationToken verificationToken ) {
+        // Send Mail to User
+        String url = applicationUrl +
+                "/verifyRegistration?token="
+                + verificationToken.getToken() ;
+        // Log the link on the console.
+        log.info("Click the link to verify your account: {}",url);
+
+    }
 
     private String applicationUrl(HttpServletRequest request) {
         return "http://" +
