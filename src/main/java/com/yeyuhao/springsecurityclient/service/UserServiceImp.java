@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.yeyuhao.springsecurityclient.model.UserModel;
 
+import java.beans.Encoder;
 import java.util.Calendar;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +28,7 @@ public class UserServiceImp implements UserService{
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
 
     @Override
     public User registerUser(UserModel userModel) {
@@ -130,4 +132,10 @@ public class UserServiceImp implements UserService{
         return "valid";
     }
 
+    @Override
+    public boolean comparePassword(UserModel userModel) {
+        User user =  userRepository.findByEmail(userModel.getEmail());
+        String password = user.getPassword();
+        return passwordEncoder.matches(userModel.getPassword() , password);
+    }
 }

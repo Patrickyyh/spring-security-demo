@@ -7,10 +7,12 @@ import com.yeyuhao.springsecurityclient.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.yeyuhao.springsecurityclient.model.UserModel;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,6 +66,27 @@ public class RegistrationController {
             url = passwordResetTokenMail(user, applicationUrl(request),token);
         }
         return url;
+
+    }
+
+    @PostMapping("/login")
+    public HashMap<String ,String> loginUser(@RequestBody UserModel userModel){
+        boolean passwordCompareResult = userService.comparePassword(userModel);
+        if(passwordCompareResult){
+//            return "Password Correct !"
+            User user = userService.findUserByEmail(userModel.getEmail());
+            HashMap<String ,String> returnMap = new HashMap<>();
+            returnMap.put("email" , user.getEmail());
+            returnMap.put("lastName" , user.getLastName());
+            returnMap.put("firstName" , user.getFirstName());
+
+            return returnMap;
+
+        }else{
+            HashMap<String ,String> returnMap = new HashMap<>();
+            returnMap.put("error-message" , "Sorry, the password is incorrect");
+            return returnMap;
+        }
 
     }
 

@@ -23,4 +23,6 @@ public interface UserService {
     Optional<User> getUserByPasswordResetToken(String token);
 
     void updatePassword(User user, String newPassword);
+
+    boolean comparePassword(UserModel userModel);
 }
